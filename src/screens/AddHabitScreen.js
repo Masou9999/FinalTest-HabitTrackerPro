@@ -9,31 +9,50 @@ export default function AddHabitScreen({ navigation, route }) {
   const habitToEdit = route.params?.habitToEdit;
   const isEditing = !!habitToEdit;
 
+  // State initialization
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [selectedColor, setSelectedColor] = useState('blue');
   const [selectedIcon, setSelectedIcon] = useState('fitness');
   const [dailyReminder, setDailyReminder] = useState(false);
 
+  // Pre-fill data if editing
+  useEffect(() => {
+    if (isEditing) {
+      setTitle(habitToEdit.title);
+      setDescription(habitToEdit.description || '');
+      setSelectedColor(habitToEdit.color);
+      setSelectedIcon(habitToEdit.icon);
+      setDailyReminder(habitToEdit.reminder || false);
+      navigation.setOptions({ title: 'Edit Habit' });
+    }
+  }, [habitToEdit]);
+
   const colors = ['blue', 'purple', 'green', 'orange'];
   const icons = ['fitness', 'book', 'water', 'code', 'bed'];
 
   const handleSave = () => {
-    if (!title) return alert("Title is required!");
+    // VALIDATION LOGIC UPDATE:
+    // Only strictly require Title if we are creating a NEW habit.
+    if (!isEditing && !title.trim()) {
+      return alert("Title is required for new habits!");
+    }
+
+    // If Editing, and Title is empty, fallback to the original title.
+    // This means you can just edit the Icon/Color without touching the text.
+    const finalTitle = title.trim() || (isEditing ? habitToEdit.title : "Untitled Habit");
 
     const habitData = {
-      title,
-      description,
+      title: finalTitle,
+      description: description,
       icon: selectedIcon,
       color: selectedColor,
       reminder: dailyReminder
     };
 
     if (isEditing) {
-      // FR-2: Update existing habit
       updateHabit(habitToEdit.id, habitData);
     } else {
-      // FR-1: Create new habit
       addHabit(habitData);
     }
     navigation.goBack();
@@ -41,12 +60,16 @@ export default function AddHabitScreen({ navigation, route }) {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.header}>{isEditing ? 'Edit Habit' : 'New Habit'}</Text>
+      <View style={styles.headerRow}>
+        <Text style={styles.header}>{isEditing ? 'Edit Habit' : 'New Habit'}</Text>
+        {/* Swipe down hint */}
+        <View style={styles.dragBar} />
+      </View>
 
       <Text style={styles.label}>Title</Text>
       <TextInput 
         style={styles.input} 
-        placeholder="e.g., Read 10 pages" 
+        placeholder={isEditing ? habitToEdit.title : "e.g., Read 10 pages"} 
         placeholderTextColor="#666"
         value={title}
         onChangeText={setTitle}
@@ -91,15 +114,18 @@ export default function AddHabitScreen({ navigation, route }) {
       </View>
 
       <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-        <Text style={styles.saveText}>{isEditing ? 'Update Changes' : 'Create Habit'}</Text>
+        <Text style={styles.saveText}>{isEditing ? 'Save Changes' : 'Create Habit'}</Text>
       </TouchableOpacity>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#030303ff', padding: 20, paddingTop: 50 },
-  header: { fontSize: 28, fontWeight: 'bold', color: '#FFF', marginBottom: 30 },
+  container: { flex: 1, backgroundColor: '#121212', padding: 20, paddingTop: 20 },
+  headerRow: { alignItems: 'center', marginBottom: 20 },
+  dragBar: { width: 40, height: 5, backgroundColor: '#333', borderRadius: 3, marginTop: 10 }, // Visual cue for swipe down
+  header: { fontSize: 28, fontWeight: 'bold', color: '#FFF', alignSelf: 'flex-start', marginTop: 20 },
+  
   label: { color: '#AAA', marginBottom: 10, fontSize: 16 },
   input: { backgroundColor: '#1E1E1E', color: '#FFF', borderRadius: 12, padding: 15, marginBottom: 25, fontSize: 16 },
   row: { flexDirection: 'row', marginBottom: 25, gap: 15 },
