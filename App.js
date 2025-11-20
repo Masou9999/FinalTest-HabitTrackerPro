@@ -2,7 +2,7 @@ import React from 'react';
 import { StatusBar } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createStackNavigator, TransitionPresets } from '@react-navigation/stack'; // Import TransitionPresets
 import { Ionicons } from '@expo/vector-icons';
 import { HabitProvider } from './src/context/HabitContext';
 
@@ -18,7 +18,22 @@ function HomeStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="HabitList" component={HomeScreen} />
-      <Stack.Screen name="AddHabit" component={AddHabitScreen} options={{ presentation: 'modal' }} />
+      
+      {/* Updated Options for Add/Edit Screen */}
+      <Stack.Screen 
+        name="AddHabit" 
+        component={AddHabitScreen} 
+        options={{ 
+          // This makes it look like a card sheet
+          presentation: 'modal', 
+          // This allows the swipe down gesture
+          gestureEnabled: true,  
+          // This forces the visual style of an iOS modal (swipeable) even on Android
+          ...TransitionPresets.ModalPresentationIOS, 
+          // Optional: Hide the default header so we use our custom one
+          headerShown: false 
+        }} 
+      />
     </Stack.Navigator>
   );
 }

@@ -1,11 +1,14 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Switch } from 'react-native';
 import { HabitContext } from '../context/HabitContext';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function AddHabitScreen({ navigation }) {
-  const { addHabit } = useContext(HabitContext);
+export default function AddHabitScreen({ navigation, route }) {
+  const { addHabit, updateHabit } = useContext(HabitContext);
   
+  const habitToEdit = route.params?.habitToEdit;
+  const isEditing = !!habitToEdit;
+
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [selectedColor, setSelectedColor] = useState('blue');
@@ -17,19 +20,28 @@ export default function AddHabitScreen({ navigation }) {
 
   const handleSave = () => {
     if (!title) return alert("Title is required!");
-    addHabit({
+
+    const habitData = {
       title,
       description,
       icon: selectedIcon,
       color: selectedColor,
       reminder: dailyReminder
-    });
+    };
+
+    if (isEditing) {
+      // FR-2: Update existing habit
+      updateHabit(habitToEdit.id, habitData);
+    } else {
+      // FR-1: Create new habit
+      addHabit(habitData);
+    }
     navigation.goBack();
   };
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.header}>New Habit</Text>
+      <Text style={styles.header}>{isEditing ? 'Edit Habit' : 'New Habit'}</Text>
 
       <Text style={styles.label}>Title</Text>
       <TextInput 
@@ -79,14 +91,14 @@ export default function AddHabitScreen({ navigation }) {
       </View>
 
       <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-        <Text style={styles.saveText}>Create Habit</Text>
+        <Text style={styles.saveText}>{isEditing ? 'Update Changes' : 'Create Habit'}</Text>
       </TouchableOpacity>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#121212', padding: 20, paddingTop: 50 },
+  container: { flex: 1, backgroundColor: '#030303ff', padding: 20, paddingTop: 50 },
   header: { fontSize: 28, fontWeight: 'bold', color: '#FFF', marginBottom: 30 },
   label: { color: '#AAA', marginBottom: 10, fontSize: 16 },
   input: { backgroundColor: '#1E1E1E', color: '#FFF', borderRadius: 12, padding: 15, marginBottom: 25, fontSize: 16 },

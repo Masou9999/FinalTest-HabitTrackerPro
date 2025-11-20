@@ -41,6 +41,16 @@ export const HabitProvider = ({ children }) => {
     saveHabits(habits.filter((h) => h.id !== id));
   };
 
+  const updateHabit = (id, updatedFields) => {
+    const updatedHabits = habits.map((habit) => {
+      if (habit.id === id) {
+        return { ...habit, ...updatedFields };
+      }
+      return habit;
+    });
+    saveHabits(updatedHabits);
+  };
+
   // FR-4: Mark Habit as Completed 
   // FR-6: Streak Tracking [cite: 35]
   const toggleHabitCompletion = (id) => {
@@ -96,7 +106,13 @@ export const HabitProvider = ({ children }) => {
   };
 
   return (
-    <HabitContext.Provider value={{ habits, addHabit, deleteHabit, toggleHabitCompletion }}>
+    <HabitContext.Provider value={{ 
+      habits, 
+      addHabit, 
+      deleteHabit, 
+      updateHabit, // <--- Add this
+      toggleHabitCompletion 
+    }}>
       {children}
     </HabitContext.Provider>
   );
